@@ -53,9 +53,9 @@ function PodMonitoring() {
     return onNewLine(newBuffer, fn);
   };
 
-  const streamUpdates = () => {
+  const streamUpdates = async () => {
     if (lastResourceVersion != null) {
-      fetch(
+      await fetch(
         `https://api.ocp49.sandbox1411.opentlc.com:6443/api/v1/pods?watch=1&resourceVersion=${lastResourceVersion}`,
         {
           headers: {
@@ -69,10 +69,10 @@ function PodMonitoring() {
         console.log(stream);
         return stream.read().then((done, value) => {
           console.log(value);
-          if (done) {
-            console.log("Request terminated");
-            return;
-          }
+          //   if (done) {
+          //     console.log("Request terminated");
+          //     return;
+          //   }
           buffer += utf8Decoder.decode(value);
           buffer = onNewLine(buffer, (chunk) => {
             if (chunk.trim().length === 0) {
