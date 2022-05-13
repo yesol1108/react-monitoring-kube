@@ -1,12 +1,33 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+// Material Dashboard 2 React components
+import MDBox from "components/MDBox";
+
+// Material Dashboard 2 React example components
+import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
+import DashboardNavbar from "examples/Navbars/DashboardNavbar";
+import Footer from "examples/Footer";
+// eslint-disable-next-line no-unused-vars
+import { setDarkMode } from "context";
+
 function PodMonitoring() {
-  const apitoken = "Bearer sha256~84tETvkktew2BdOme4_XFNVubL7z8LQ2H1uNjGcn7o0";
-  const [pods, setPods] = useState(null);
+  const apitoken = "Bearer sha256~catK_DH6M6nvGet49joe77XOTkGn3JOfulZJ_Hg4Mkk";
+
   const [loading, setLoading] = useState(false);
+  const [pods, setPods] = useState(null);
   const [error, setError] = useState(null);
   const [lastResourceVersion, setResourceVersion] = useState(null);
+  //   const [podList, setPodList] = useState(null);
+
+  //   const onCreate = (podid) => {
+  //     const pod = {
+  //       id: podid,
+  //       pods,
+  //     };
+  //     setPodList([...pods, pod]);
+  //   };
 
   const fetchPods = async () => {
     try {
@@ -23,9 +44,14 @@ function PodMonitoring() {
           },
         }
       );
-
       setResourceVersion(response.data.metadata.resourceVersion);
       setPods(response.data.items);
+      //   response.data.items.forEach((apod) => {
+      //     // console.log(apod);
+      //     const podId = `${apod.metadata.namespace}-${apod.metadata.name}`;
+      //     setPods(apod);
+      //     onCreate(podId);
+      //   });
     } catch (e) {
       setError(e);
     }
@@ -55,13 +81,18 @@ function PodMonitoring() {
   if (!pods) return null;
 
   return (
-    <ul>
-      {pods.map((pod) => (
-        <li key={pod.metadata.uid}>
-          {pod.metadata.name} ({pod.metadata.namespace})
-        </li>
-      ))}
-    </ul>
+    <DashboardLayout>
+      <DashboardNavbar />
+      <MDBox mb={2} />
+      <ul>
+        {pods.map((pod) => (
+          <li key={pod.metadata.uid}>
+            {pod.metadata.name} ({pod.metadata.namespace})
+          </li>
+        ))}
+      </ul>
+      <Footer />
+    </DashboardLayout>
   );
 }
 

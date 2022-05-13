@@ -36,6 +36,7 @@ Coded by www.creative-tim.com
 */
 
 // Material Dashboard 2 React layouts
+import PodMonitoring from "layouts/podmonitoring";
 import Dashboard from "layouts/dashboard";
 import Tables from "layouts/tables";
 import Billing from "layouts/billing";
@@ -49,6 +50,14 @@ import SignUp from "layouts/authentication/sign-up";
 import Icon from "@mui/material/Icon";
 
 const routes = [
+  {
+    type: "collapse",
+    name: "Pod Monitoring",
+    key: "podmonitoring",
+    icon: <Icon fontSize="small">apps</Icon>,
+    route: "/podmonitoring",
+    component: <PodMonitoring />,
+  },
   {
     type: "collapse",
     name: "Dashboard",
