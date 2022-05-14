@@ -13,49 +13,51 @@ import Footer from "examples/Footer";
 import { setDarkMode } from "context";
 
 import { useStream } from "react-fetch-streams";
+import NodeTemplate from "./components/NodeTemplate";
+
+const apitoken = "Bearer sha256~K_40SavGgPsTi0c5F8Ty-X-XcK3FjMHW-skymsRtJHg";
+
+const createPod = (pod) => ({
+  name: pod.metadata.name,
+  namespace: pod.metadata.namespace,
+  nodeName: pod.spec.nodeName,
+});
+
+const onNewLine = (buffer, fn) => {
+  const newLineIndex = buffer.indexOf("\n");
+  if (newLineIndex === -1) {
+    return buffer;
+  }
+  const chunk = buffer.slice(0, buffer.indexOf("\n"));
+  const newBuffer = buffer.slice(buffer.indexOf("\n") + 1);
+  fn(chunk);
+  return onNewLine(newBuffer, fn);
+};
+
+function groupBy(arr, groupByKeyFn) {
+  return arr.reduce((acc, c) => {
+    const key = groupByKeyFn(c);
+    if (!(key in acc)) {
+      acc[key] = [];
+    }
+    acc[key].push(c);
+    return acc;
+  }, {});
+}
 
 function PodMonitoring() {
-  const apitoken = "Bearer sha256~Qy89Sj5CLv7250oCTUIh-vemZDZXzy9AshccGTSsrYU";
+  const [loaded, setLoaded] = useState(false);
+  const [resourceVersion, setResourceVersion] = useState(null);
+  const [allPods, setAllPods] = useState({});
+  const podList = Array.from(Object.values(allPods));
 
-  const [loading, setLoading] = useState(false);
-  //   const [lastResourceVersion, setResourceVersion] = useState(null);
-  const [pods, setPods] = useState(null);
-  const [podList, setPodList] = useState(null);
-  let lastResourceVersion;
+  const podsByNode = groupBy(podList, (it) => it.nodeName);
 
-  const onDeleted = (uid) => {
-    setPods(pods.filter((pod) => pod.metadata.uid !== uid));
-  };
-
-  const onModified = (uid) => {
-    setPods(
-      pods.map((pod) =>
-        pod.metadata.uid === uid
-          ? {
-              ...pod,
-              name: pod.metadata.name,
-              namespace: pod.metadata.namespace,
-              nodeName: pod.spec.nodeName,
-            }
-          : pod
-      )
-    );
-  };
-
-  const onNewLine = (buffer, fn) => {
-    const newLineIndex = buffer.indexOf("\n");
-    if (newLineIndex === -1) {
-      return buffer;
-    }
-    const chunk = buffer.slice(0, buffer.indexOf("\n"));
-    const newBuffer = buffer.slice(buffer.indexOf("\n") + 1);
-    fn(chunk);
-    return onNewLine(newBuffer, fn);
-  };
-
-  const streamUpdates = async () => {
+  const streamUpdates = async (initialLastResourceVersion) => {
+    // eslint-disable-next-line prefer-const
+    let lastResourceVersion = initialLastResourceVersion;
     if (lastResourceVersion != null) {
-      await fetch(
+      fetch(
         `https://api.ocp49.sandbox1411.opentlc.com:6443/api/v1/pods?watch=1&resourceVersion=${lastResourceVersion}`,
         {
           headers: {
@@ -66,13 +68,11 @@ function PodMonitoring() {
         const stream = response.body.getReader();
         const utf8Decoder = new TextDecoder("utf-8");
         let buffer = "";
-        console.log(stream);
-        return stream.read().then((done, value) => {
-          console.log(value);
-          //   if (done) {
-          //     console.log("Request terminated");
-          //     return;
-          //   }
+        return stream.read().then(function processText({ done, value }) {
+          if (done) {
+            console.log("Request terminated");
+            return;
+          }
           buffer += utf8Decoder.decode(value);
           buffer = onNewLine(buffer, (chunk) => {
             if (chunk.trim().length === 0) {
@@ -82,29 +82,35 @@ function PodMonitoring() {
             try {
               const event = JSON.parse(chunk);
               console.log("PROCESSING EVENT: ", event);
-              const { podobject } = event;
+              const { object: podobject } = event;
+              const podId = `${podobject.metadata.namespace}-${podobject.metadata.name}`;
               switch (event.type) {
+                case "MODIFIED":
                 case "ADDED": {
-                  setPods(podobject);
+                  if (!podobject.spec.nodeName) {
+                    return;
+                  }
+                  setAllPods((prev) => ({ ...prev, [podId]: createPod(podobject) }));
                   break;
                 }
                 case "DELETED": {
-                  console.log(podobject);
-                  // onDeleted(podobject.)
-                  // app.remove(podId);
-                  break;
-                }
-                case "MODIFIED": {
-                  setPods(podobject);
+                  setAllPods((prev) => {
+                    const newPods = { ...prev };
+                    delete newPods[podId];
+                    return newPods;
+                  });
                   break;
                 }
                 default:
                   break;
               }
+              lastResourceVersion = event.object.metadata.resourceVersion;
             } catch (error) {
               console.log("Error while parsing", chunk, "\n", error);
             }
           });
+          // eslint-disable-next-line consistent-return
+          return stream.read().then(processText);
         });
       });
     }
@@ -118,46 +124,46 @@ function PodMonitoring() {
     })
       .then((response) => response.json())
       .then((response) => {
-        const poditem = response.items;
-        lastResourceVersion = response.metadata.resourceVersion;
-        poditem.forEach((pod) => {
-          // console.log(pod.metadata);
-          setPods(pod);
-        });
-      })
-      .then(() => streamUpdates());
+        const poditems = response.items;
+        const initialAllPods = poditems.reduce((prev, cur) => {
+          if (!cur.spec.nodeName) {
+            return prev;
+          }
+          const podId = `${cur.metadata.namespace}-${cur.metadata.name}`;
+          return {
+            ...prev,
+            [podId]: createPod(cur),
+          };
+        }, {});
+        setAllPods(initialAllPods);
+        setLoaded(true);
+        setResourceVersion(response.metadata.resourceVersion);
+      });
   }
-
-  //   if (lastResourceVersion != null) {
-  //     console.log(lastResourceVersion);
-  //     const podstream = axios.get(
-  //       `https://api.ocp49.sandbox1411.opentlc.com:6443/api/v1/pods?watch=1&resourceVersion=${lastResourceVersion}`,
-  //       {
-  //         headers: {
-  //           Authorization: apitoken,
-  //         },
-  //       }
-  //     );
-  //   }
 
   useEffect(() => {
     fetchPods();
   }, []);
 
-  // 아직 pods목록이 받아와 지지 않았을 때는 아무것도 표시되지 않도록
-  //   if (!pods) return null;
-
+  useEffect(() => {
+    if (!loaded || !resourceVersion) {
+      return;
+    }
+    streamUpdates(resourceVersion);
+  }, [loaded, resourceVersion]);
+  if (podList.length === 0) {
+    return null;
+  }
   return (
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox mb={2} />
-      {/* <ul>
-        {pods.map((pod) => (
-          <li key={pod.metadata.uid}>
-            {pod.metadata.name} ({pod.metadata.namespace})
-          </li>
-        ))}
-      </ul> */}
+      <ul>
+        {Object.keys(podsByNode).map((nodeName) => {
+          const pods = podsByNode[nodeName];
+          return <NodeTemplate nodeName={nodeName} pods={pods} />;
+        })}
+      </ul>
       <Footer />
     </DashboardLayout>
   );
