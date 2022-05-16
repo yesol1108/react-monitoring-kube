@@ -1,6 +1,8 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+
+// @mui material components
+import Grid from "@mui/material/Grid";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -9,13 +11,13 @@ import MDBox from "components/MDBox";
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
+
 // eslint-disable-next-line no-unused-vars
 import { setDarkMode } from "context";
 
-import { useStream } from "react-fetch-streams";
 import NodeTemplate from "./components/NodeTemplate";
 
-const apitoken = "Bearer sha256~K_40SavGgPsTi0c5F8Ty-X-XcK3FjMHW-skymsRtJHg";
+const apitoken = "Bearer sha256~1gVNYTp3WlhtB37yD99Hf9Uo06n3ra0d1VMm0ae54K4";
 
 const createPod = (pod) => ({
   name: pod.metadata.name,
@@ -76,7 +78,6 @@ function PodMonitoring() {
           buffer += utf8Decoder.decode(value);
           buffer = onNewLine(buffer, (chunk) => {
             if (chunk.trim().length === 0) {
-              console.log("NO DATA!!!!");
               return;
             }
             try {
@@ -157,14 +158,17 @@ function PodMonitoring() {
   return (
     <DashboardLayout>
       <DashboardNavbar />
-      <MDBox mb={2} />
-      <ul>
-        {Object.keys(podsByNode).map((nodeName) => {
-          const pods = podsByNode[nodeName];
-          return <NodeTemplate nodeName={nodeName} pods={pods} />;
-        })}
-      </ul>
-      <Footer />
+      <MDBox py={3}>
+        <Grid container spacing={3}>
+          {/* <ul> */}
+          {Object.keys(podsByNode).map((nodeName) => {
+            const pods = podsByNode[nodeName];
+            return <NodeTemplate nodeName={nodeName} pods={pods} />;
+          })}
+          {/* </ul> */}
+        </Grid>
+      </MDBox>
+      {/* <Footer /> */}
     </DashboardLayout>
   );
 }
