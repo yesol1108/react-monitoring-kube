@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
+import { grid } from "@mui/system";
 import MDTypography from "components/MDTypography";
 
 // @mui material components
@@ -14,31 +15,32 @@ import Icon from "@mui/material/Icon";
 
 import Node from "./Node";
 
-function NodeTemplate({ pods, nodeName }) {
+function NodeTemplate({ pods, nodeName, color }) {
   return (
-    <Grid item xs={12} md={6} lg={3}>
-      <MDBox mb={1.5}>
-        <MDBox display="flex" justifyContent="space-between" pt={1} px={2}>
+    <Grid item xs={12} md={6} lg={4}>
+      <MDBox mb={1}>
+        <MDBox pt={1}>
           <Card>
-            <MDBox textAlign="center" lineHeight={1.25}>
-              <MDTypography variant="button" color="text">
+            <MDBox
+              textAlign="center"
+              lineHeight={1.25}
+              justifyContent="center"
+              alignItems="center"
+              display="flex"
+              color={color === "light" ? "dark" : "white"}
+            >
+              <MDTypography variant="body2" color="text" mt={1.5} mx={1.5} mb={-0.5}>
                 {nodeName}
               </MDTypography>
             </MDBox>
             <Divider />
-            <MDBox pb={2} px={2}>
-              <Node pods={pods} />
+            <MDBox p={0.5} mt={-1.5} mb={1} ml={2}>
+              <Grid container alignItems="center">
+                <Node pods={pods} />
+              </Grid>
             </MDBox>
           </Card>
         </MDBox>
-        {/* <li>
-      <div>
-        <p>{nodeName}</p>
-        <div>
-          <Node pods={pods} />
-        </div>
-      </div>
-      </li> */}
       </MDBox>
     </Grid>
   );
@@ -47,11 +49,22 @@ function NodeTemplate({ pods, nodeName }) {
 NodeTemplate.defaultProps = {
   nodeName: "",
   pods: [],
+  color: "info",
 };
 
 NodeTemplate.propTypes = {
   nodeName: PropTypes.string,
   pods: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })),
+  color: PropTypes.oneOf([
+    "primary",
+    "secondary",
+    "info",
+    "success",
+    "warning",
+    "error",
+    "light",
+    "dark",
+  ]),
 };
 
 export default NodeTemplate;

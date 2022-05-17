@@ -47,8 +47,8 @@ function Dashboard() {
             <MDBox mb={1.5}>
               <ComplexStatisticsCard
                 color="dark"
-                icon="weekend"
-                title="Bookings"
+                icon="computer"
+                title="Nodes"
                 count={281}
                 percentage={{
                   color: "success",
@@ -61,8 +61,8 @@ function Dashboard() {
           <Grid item xs={12} md={6} lg={3}>
             <MDBox mb={1.5}>
               <ComplexStatisticsCard
-                icon="leaderboard"
-                title="Today's Users"
+                icon="apps"
+                title="Pods"
                 count="2,300"
                 percentage={{
                   color: "success",
@@ -76,8 +76,8 @@ function Dashboard() {
             <MDBox mb={1.5}>
               <ComplexStatisticsCard
                 color="success"
-                icon="store"
-                title="Revenue"
+                icon="storage"
+                title="StorageClasses"
                 count="34k"
                 percentage={{
                   color: "success",
@@ -92,7 +92,7 @@ function Dashboard() {
               <ComplexStatisticsCard
                 color="primary"
                 icon="person_add"
-                title="Followers"
+                title="PersistentVolumeClaims"
                 count="+91"
                 percentage={{
                   color: "success",

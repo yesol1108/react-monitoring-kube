@@ -29,7 +29,7 @@ import { useMaterialUIController, setMiniSidenav, setOpenConfigurator } from "co
 
 // Images
 import brandWhite from "assets/images/openshift-platform-logo.svg";
-import brandDark from "assets/images/logo-ct-dark.png";
+import brandDark from "assets/images/openshift-platform-logo-standard.svg";
 
 export default function App() {
   const [controller, dispatch] = useMaterialUIController();
