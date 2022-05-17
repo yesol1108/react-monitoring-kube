@@ -2,7 +2,6 @@
   "name": "react-monitoring",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://api.ocp49.sandbox1411.opentlc.com:6443:8001",
   "dependencies": {
     "@emotion/cache": "11.7.1",
     "@emotion/react": "11.7.1",
