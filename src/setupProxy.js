@@ -5,6 +5,7 @@ module.exports = function (app) {
     createProxyMiddleware("/api", {
       target: "https://api.ocp49.sandbox1411.opentlc.com:6443",
       changeOrigin: true,
+      secure: false,
     })
   );
 };
