@@ -3,6 +3,9 @@
     "browser": true,
     "es2021": true
   },
+  "eslint.workingDirectories": [
+    { "mode": "auto" }
+  ],
   "extends": ["plugin:react/recommended", "airbnb", "prettier"],
   "parserOptions": {
     "ecmaFeatures": {
