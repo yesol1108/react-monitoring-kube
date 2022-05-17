@@ -37,7 +37,7 @@ const createPod = (pod) => ({
   status: pod.status.phase,
 });
 
-const createNamespace = (namespace) => ({
+const createNamespace = (namespace, podsByNamespace) => ({
   // { Header: "Display name", accessor: "displayname", width: "16%" },
   // { Header: "Requester", accessor: "requester", width: "16%" },
   // { Header: "Memory", accessor: "memory", width: "11%" },
@@ -46,6 +46,7 @@ const createNamespace = (namespace) => ({
   name: namespace.metadata.name,
   status: namespace.status.phase,
   createdAt: namespace.metadata.creationTimestamp,
+  podCount: podsByNamespace.length,
 });
 
 const onNewLine = (buffer, fn) => {
@@ -112,11 +113,22 @@ function PodMonitoring() {
   const [namespaceList, setAllNamespaces] = useState({});
 
   const podsByNode = groupBy(podList, (it) => it.nodeName);
+  const podsByNamespace = groupBy(podList, (it) => it.namespace);
 
   const initalNamespaces = (namespaces) => {
     const data = [];
+    console.log(podsByNamespace);
     namespaces.map((ns) => {
-      const createdNamespace = createNamespace(ns);
+      const namespacename = ns.metadata.name;
+
+      if (
+        podsByNamespace[namespacename] === undefined ||
+        podsByNamespace[namespacename] === "undefined"
+      ) {
+        return null;
+      }
+      const createdNamespace = createNamespace(ns, podsByNamespace[namespacename]);
+
       return data.push(createdNamespace);
     });
     setAllNamespaces(data);
@@ -282,7 +294,7 @@ function PodMonitoring() {
       </TabPanel>
       <TabPanel value={tabval} index={1}>
         Namepsace
-        <NamespacesList namespaceList={Object.values(namespaceList)} />
+        <NamespacesList namespaceList={Object.values(namespaceList)} pods={podsByNamespace} />
       </TabPanel>
       <TabPanel value={tabval} index={2}>
         Service

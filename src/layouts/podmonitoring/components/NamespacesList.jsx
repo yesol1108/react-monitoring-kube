@@ -18,18 +18,19 @@ import Icon from "@mui/material/Icon";
 import Node from "./Node";
 
 function NamespacesList({ pods, namespaceList }) {
-  console.log(namespaceList);
+  // console.log(namespaceList);
   return (
     <DataTable
       table={{
         columns: [
           { Header: "Name", accessor: "name", width: "18%" },
           { Header: "Status", accessor: "status", width: "11%" },
-          { Header: "Display name", accessor: "displayname", width: "16%" },
-          { Header: "Requester", accessor: "requester", width: "16%" },
-          { Header: "Memory", accessor: "memory", width: "11%" },
-          { Header: "Cpu", accessor: "cpu", width: "11%" },
+          // { Header: "Display name", accessor: "displayname", width: "16%" },
+          // { Header: "Requester", accessor: "requester", width: "16%" },
+          // { Header: "Memory", accessor: "memory", width: "11%" },
+          // { Header: "Cpu", accessor: "cpu", width: "11%" },
           { Header: "Created", accessor: "createdAt", width: "17%" },
+          { Header: "Pod Count", accessor: "podCount" },
         ],
         rows: namespaceList,
       }}
