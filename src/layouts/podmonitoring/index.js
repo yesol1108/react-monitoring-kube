@@ -116,13 +116,16 @@ function PodMonitoring() {
     // eslint-disable-next-line prefer-const
     let lastResourceVersion = initialLastResourceVersion;
     if (lastResourceVersion != null) {
-      fetch(`/api/v1/pods?watch=1&resourceVersion=${lastResourceVersion}`, {
-        headers: {
-          Authorization: apitoken,
-          "Access-Control-Allow-origin": "*",
-          "Access-Control-Allow-Credentials": "true",
-        },
-      }).then((response) => {
+      fetch(
+        `https://api.ocp49.sandbox1411.opentlc.com:6443/api/v1/pods?watch=1&resourceVersion=${lastResourceVersion}`,
+        {
+          headers: {
+            Authorization: apitoken,
+            "Access-Control-Allow-origin": "*",
+            "Access-Control-Allow-Credentials": "true",
+          },
+        }
+      ).then((response) => {
         const stream = response.body.getReader();
         const utf8Decoder = new TextDecoder("utf-8");
         let buffer = "";
@@ -175,7 +178,7 @@ function PodMonitoring() {
   };
 
   function fetchPods() {
-    fetch("/api/v1/pods", {
+    fetch("https://api.ocp49.sandbox1411.opentlc.com:6443/api/v1/pods", {
       headers: {
         Authorization: apitoken,
         "Access-Control-Allow-origin": "*",
@@ -202,7 +205,7 @@ function PodMonitoring() {
   }
 
   function fetchNamespaces() {
-    fetch("/api/v1/namespaces", {
+    fetch("https://api.ocp49.sandbox1411.opentlc.com:6443/api/v1/namespaces", {
       headers: {
         Authorization: apitoken,
         "Access-Control-Allow-origin": "*",
@@ -229,7 +232,7 @@ function PodMonitoring() {
   }
 
   function fetchServices() {
-    fetch("/api/v1/services", {
+    fetch("https://api.ocp49.sandbox1411.opentlc.com:6443/api/v1/services", {
       headers: {
         Authorization: apitoken,
         "Access-Control-Allow-origin": "*",
