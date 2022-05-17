@@ -121,6 +121,8 @@ function PodMonitoring() {
         {
           headers: {
             Authorization: apitoken,
+            "Access-Control-Allow-origin": "*",
+            "Access-Control-Allow-Credentials": "true",
           },
         }
       ).then((response) => {
@@ -179,6 +181,8 @@ function PodMonitoring() {
     fetch("https://api.ocp49.sandbox1411.opentlc.com:6443/api/v1/pods", {
       headers: {
         Authorization: apitoken,
+        "Access-Control-Allow-origin": "*",
+        "Access-Control-Allow-Credentials": "true",
       },
     })
       .then((response) => response.json())
@@ -204,6 +208,8 @@ function PodMonitoring() {
     fetch("https://api.ocp49.sandbox1411.opentlc.com:6443/api/v1/namespaces", {
       headers: {
         Authorization: apitoken,
+        "Access-Control-Allow-origin": "*",
+        "Access-Control-Allow-Credentials": "true",
       },
     })
       .then((response) => response.json())
@@ -229,6 +235,8 @@ function PodMonitoring() {
     fetch("https://api.ocp49.sandbox1411.opentlc.com:6443/api/v1/services", {
       headers: {
         Authorization: apitoken,
+        "Access-Control-Allow-origin": "*",
+        "Access-Control-Allow-Credentials": "true",
       },
     })
       .then((response) => response.json())
