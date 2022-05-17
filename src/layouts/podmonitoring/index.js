@@ -37,14 +37,15 @@ const createPod = (pod) => ({
   status: pod.status.phase,
 });
 
-const createNamepsace = (namespaces) => ({
+const createNamespace = (namespace) => ({
   // { Header: "Display name", accessor: "displayname", width: "16%" },
   // { Header: "Requester", accessor: "requester", width: "16%" },
   // { Header: "Memory", accessor: "memory", width: "11%" },
   // { Header: "Cpu", accessor: "cpu", width: "11%" },
-  name: namespaces.metadata.name,
-  status: namespaces.status.phase,
-  createdAt: namespaces.metadata.creationTimestamp,
+  uid: namespace.metadata.uid,
+  name: namespace.metadata.name,
+  status: namespace.status.phase,
+  createdAt: namespace.metadata.creationTimestamp,
 });
 
 const onNewLine = (buffer, fn) => {
@@ -111,6 +112,15 @@ function PodMonitoring() {
   const [namespaceList, setAllNamespaces] = useState({});
 
   const podsByNode = groupBy(podList, (it) => it.nodeName);
+
+  const initalNamespaces = (namespaces) => {
+    const data = [];
+    namespaces.map((ns) => {
+      const createdNamespace = createNamespace(ns);
+      return data.push(createdNamespace);
+    });
+    setAllNamespaces(data);
+  };
 
   const streamUpdates = async (initialLastResourceVersion) => {
     // eslint-disable-next-line prefer-const
@@ -212,19 +222,7 @@ function PodMonitoring() {
       .then((response) => response.json())
       .then((response) => {
         const namespaceitems = response.items;
-        const initalNamespaces = namespaceitems.reduce((prev, cur) => {
-          const namespaceUid = cur.metadata.uid;
-          console.log(`###{${prev}`);
-          return {
-            ...prev,
-            name: cur.metadata.name,
-            status: cur.status.phase,
-            createdAt: cur.metadata.creationTimestamp,
-          };
-        }, {});
-        console.log(initalNamespaces);
-        setAllNamespaces((prev) => ({ ...prev, initalNamespaces }));
-        console.log(namespaceList);
+        initalNamespaces(namespaceitems);
       });
   }
 
@@ -277,14 +275,14 @@ function PodMonitoring() {
           <Grid container spacing={1.5}>
             {Object.keys(podsByNode).map((nodeName) => {
               const pods = podsByNode[nodeName];
-              return <NodeTemplate nodeName={nodeName} pods={pods} />;
+              return <NodeTemplate key={nodeName} nodeName={nodeName} pods={pods} />;
             })}
           </Grid>
         </MDBox>
       </TabPanel>
       <TabPanel value={tabval} index={1}>
         Namepsace
-        <NamespacesList namespaceList={namespaceList} />
+        <NamespacesList namespaceList={Object.values(namespaceList)} />
       </TabPanel>
       <TabPanel value={tabval} index={2}>
         Service

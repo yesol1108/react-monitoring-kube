@@ -20,6 +20,7 @@ function Node({ pods }) {
         <Grid item xs={12} sm={3} lg={2}>
           <Tooltip title={pod.name}>
             <MDBox
+              key={pod.name}
               bgColor={pod.status === "Running" || "Succeeded" ? "success" : "error"}
               variant="gradient"
               borderRadius="lg"

@@ -18,6 +18,7 @@ import Icon from "@mui/material/Icon";
 import Node from "./Node";
 
 function NamespacesList({ pods, namespaceList }) {
+  console.log(namespaceList);
   return (
     <DataTable
       table={{
@@ -30,7 +31,7 @@ function NamespacesList({ pods, namespaceList }) {
           { Header: "Cpu", accessor: "cpu", width: "11%" },
           { Header: "Created", accessor: "createdAt", width: "17%" },
         ],
-        rows: [{ namespaceList }],
+        rows: namespaceList,
       }}
     />
   );

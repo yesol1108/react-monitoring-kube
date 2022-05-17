@@ -18,29 +18,27 @@ import Node from "./Node";
 function NodeTemplate({ pods, nodeName, color }) {
   return (
     <Grid item xs={12} md={6} lg={4}>
-      <MDBox mb={1}>
-        <MDBox pt={1}>
-          <Card>
-            <MDBox
-              textAlign="center"
-              lineHeight={1.25}
-              justifyContent="center"
-              alignItems="center"
-              display="flex"
-              color={color === "light" ? "dark" : "white"}
-            >
-              <MDTypography variant="body2" color="text" mt={1.5} mx={1.5} mb={-0.5}>
-                {nodeName}
-              </MDTypography>
-            </MDBox>
-            <Divider />
-            <MDBox p={0.5} mt={-1.5} mb={1} ml={2}>
-              <Grid container alignItems="center">
-                <Node pods={pods} />
-              </Grid>
-            </MDBox>
-          </Card>
-        </MDBox>
+      <MDBox mb={1} pt={1}>
+        <Card>
+          <MDBox
+            textAlign="center"
+            lineHeight={1.25}
+            justifyContent="center"
+            alignItems="center"
+            display="flex"
+            color={color === "light" ? "dark" : "white"}
+          >
+            <MDTypography variant="body2" color="text" mt={1.5} mx={1.5} mb={-0.5}>
+              {nodeName}
+            </MDTypography>
+          </MDBox>
+          <Divider />
+          <MDBox p={0.5} mt={-1.5} mb={1} ml={2}>
+            <Grid container alignItems="center">
+              <Node key={nodeName} pods={pods} />
+            </Grid>
+          </MDBox>
+        </Card>
       </MDBox>
     </Grid>
   );
