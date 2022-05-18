@@ -26,7 +26,7 @@ import { setDarkMode } from "context";
 import NodeTemplate from "./components/NodeTemplate";
 import NamespacesList from "./components/NamespacesList";
 
-const apitoken = "Bearer sha256~Pg0q-Ga8JbrucobAvIQFlFMD-dFb1eHoenmFC6RV0pw";
+const apitoken = "Bearer sha256~RYQLu5N0ij4KvLGf7BZLw9eHovPNS3NPK3EpoiEBgRw";
 
 const createPod = (pod) => ({
   key: pod.metadata.uid,
