@@ -45,7 +45,7 @@ NamespacesList.defaultProps = {
 
 NamespacesList.propTypes = {
   namespaceList: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })),
-  pods: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })),
+  pods: PropTypes.object,
 };
 
 export default NamespacesList;
