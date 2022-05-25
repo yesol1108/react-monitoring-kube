@@ -25,8 +25,9 @@ import { setDarkMode } from "context";
 
 import NodeTemplate from "./components/NodeTemplate";
 import NamespacesList from "./components/NamespacesList";
+import ServicesList from "./components/ServicesList";
 
-const apitoken = "Bearer sha256~mrl_D6HCrLBy24uU0YbLU-2kZDPsWMNStz2yEsxq7PQ";
+const apitoken = "Bearer sha256~U9kGkHd6bfMxBaAyEjl1MDDdGAspsJvvBY5AIQqPvk8";
 
 const createPod = (pod) => ({
   key: pod.metadata.uid,
@@ -111,13 +112,14 @@ function PodMonitoring() {
   const podList = Array.from(Object.values(allPods));
   const [tabval, setTabVal] = useState(0);
   const [namespaceList, setAllNamespaces] = useState({});
+  const [podcount, setPodCount] = useState({});
 
   const podsByNode = groupBy(podList, (it) => it.nodeName);
   const podsByNamespace = groupBy(podList, (it) => it.namespace);
 
   const initalNamespaces = (namespaces) => {
     const data = [];
-    console.log(podsByNamespace);
+    // console.log(podsByNamespace);
     namespaces.map((ns) => {
       const namespacename = ns.metadata.name;
 
@@ -132,6 +134,21 @@ function PodMonitoring() {
       return data.push(createdNamespace);
     });
     setAllNamespaces(data);
+  };
+
+  const fetchNamespaces = () => {
+    fetch("/api/v1/namespaces", {
+      headers: {
+        Authorization: apitoken,
+        "Access-Control-Allow-origin": "*",
+        "Access-Control-Allow-Credentials": "true",
+      },
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        const namespaceitems = response.items;
+        initalNamespaces(namespaceitems);
+      });
   };
 
   const streamUpdates = async (initialLastResourceVersion) => {
@@ -223,21 +240,6 @@ function PodMonitoring() {
       });
   }
 
-  function fetchNamespaces() {
-    fetch("/api/v1/namespaces", {
-      headers: {
-        Authorization: apitoken,
-        "Access-Control-Allow-origin": "*",
-        "Access-Control-Allow-Credentials": "true",
-      },
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        const namespaceitems = response.items;
-        initalNamespaces(namespaceitems);
-      });
-  }
-
   function fetchServices() {
     fetch("/api/v1/services", {
       headers: {
@@ -269,6 +271,7 @@ function PodMonitoring() {
       return;
     }
     streamUpdates(resourceVersion);
+    fetchNamespaces();
   }, [loaded, resourceVersion]);
   if (podList.length === 0) {
     return null;
@@ -298,6 +301,7 @@ function PodMonitoring() {
       </TabPanel>
       <TabPanel value={tabval} index={2}>
         Service
+        <ServicesList namespaceList={Object.values(namespaceList)} pods={podsByNamespace} />
       </TabPanel>
       {/* <Footer /> */}
     </DashboardLayout>
