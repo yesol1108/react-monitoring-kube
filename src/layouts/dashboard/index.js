@@ -49,12 +49,7 @@ function Dashboard() {
                 color="dark"
                 icon="computer"
                 title="Nodes"
-                count={281}
-                percentage={{
-                  color: "success",
-                  amount: "+55%",
-                  label: "than lask week",
-                }}
+                count={6}
               />
             </MDBox>
           </Grid>
@@ -63,12 +58,12 @@ function Dashboard() {
               <ComplexStatisticsCard
                 icon="apps"
                 title="Pods"
-                count="2,300"
-                percentage={{
-                  color: "success",
-                  amount: "+3%",
-                  label: "than last month",
-                }}
+                count="301"
+                // percentage={{
+                //   color: "success",
+                //   amount: "+3%",
+                //   label: "than last month",
+                // }}
               />
             </MDBox>
           </Grid>
@@ -78,12 +73,12 @@ function Dashboard() {
                 color="success"
                 icon="storage"
                 title="StorageClasses"
-                count="34k"
-                percentage={{
-                  color: "success",
-                  amount: "+1%",
-                  label: "than yesterday",
-                }}
+                count="0"
+                // percentage={{
+                //   color: "success",
+                //   amount: "+1%",
+                //   label: "than yesterday",
+                // }}
               />
             </MDBox>
           </Grid>
@@ -93,12 +88,12 @@ function Dashboard() {
                 color="primary"
                 icon="person_add"
                 title="PersistentVolumeClaims"
-                count="+91"
-                percentage={{
-                  color: "success",
-                  amount: "",
-                  label: "Just updated",
-                }}
+                count="0"
+                // percentage={{
+                //   color: "success",
+                //   amount: "",
+                //   label: "Just updated",
+                // }}
               />
             </MDBox>
           </Grid>
