@@ -50,6 +50,12 @@ const createNamespace = (namespace, podsByNamespace) => ({
   podCount: podsByNamespace.length,
 });
 
+const createService = (service) => ({
+  uid: service.metadata.uid,
+  name: service.metadata.name,
+  namespace: service.metadata.namespace,
+});
+
 const onNewLine = (buffer, fn) => {
   const newLineIndex = buffer.indexOf("\n");
   if (newLineIndex === -1) {
@@ -112,6 +118,7 @@ function PodMonitoring() {
   const podList = Array.from(Object.values(allPods));
   const [tabval, setTabVal] = useState(0);
   const [namespaceList, setAllNamespaces] = useState({});
+  const [serviceList, setAllServices] = useState({});
   const [podcount, setPodCount] = useState({});
 
   const podsByNode = groupBy(podList, (it) => it.nodeName);
@@ -134,6 +141,17 @@ function PodMonitoring() {
       return data.push(createdNamespace);
     });
     setAllNamespaces(data);
+  };
+
+  const initalServices = (services) => {
+    const data = [];
+    services.map((sv) => {
+      const servicesname = sv.metadata.name;
+
+      const createdService = createService(sv);
+      return data.push(createdService);
+    });
+    setAllServices(data);
   };
 
   const fetchNamespaces = () => {
@@ -252,6 +270,7 @@ function PodMonitoring() {
       .then((response) => {
         console.log(response.items);
         const services = response.items;
+        initalServices(services);
       });
   }
 
@@ -301,7 +320,7 @@ function PodMonitoring() {
       </TabPanel>
       <TabPanel value={tabval} index={2}>
         Service
-        <ServicesList namespaceList={Object.values(namespaceList)} pods={podsByNamespace} />
+        <ServicesList serviceList={Object.values(serviceList)} />
       </TabPanel>
       {/* <Footer /> */}
     </DashboardLayout>

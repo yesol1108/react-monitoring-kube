@@ -17,35 +17,35 @@ import Icon from "@mui/material/Icon";
 
 import Node from "./Node";
 
-function ServicesList({ pods, namespaceList, servicesList }) {
+function ServicesList({ pods, namespaceList, serviceList }) {
   // console.log(namespaceList);
   return (
     <DataTable
       table={{
         columns: [
           { Header: "Name", accessor: "name", width: "18%" },
-          { Header: "Status", accessor: "status", width: "11%" },
+          //   { Header: "Status", accessor: "status", width: "11%" },
           // { Header: "Display name", accessor: "displayname", width: "16%" },
           // { Header: "Requester", accessor: "requester", width: "16%" },
           // { Header: "Memory", accessor: "memory", width: "11%" },
           // { Header: "Cpu", accessor: "cpu", width: "11%" },
-          { Header: "Created", accessor: "createdAt", width: "17%" },
+          //   { Header: "Created", accessor: "createdAt", width: "17%" },
           { Header: "Pod Count", accessor: "podCount" },
         ],
-        rows: namespaceList,
+        rows: serviceList,
       }}
     />
   );
 }
 
 ServicesList.defaultProps = {
-  servicesList: [],
+  serviceList: [],
   namespaceList: [],
   pods: [],
 };
 
 ServicesList.propTypes = {
-  servicesList: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })),
+  serviceList: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })),
   namespaceList: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })),
   pods: PropTypes.object,
 };
