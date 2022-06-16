@@ -27,7 +27,7 @@ import NodeTemplate from "./components/NodeTemplate";
 import NamespacesList from "./components/NamespacesList";
 import ServicesList from "./components/ServicesList";
 
-const apitoken = "Bearer sha256~U9kGkHd6bfMxBaAyEjl1MDDdGAspsJvvBY5AIQqPvk8";
+const apitoken = "Bearer sha256~Kzb8BV0OJ0fPZDa_IDDoodjEiR2J_alCfZNZEfAUsUE";
 
 const createPod = (pod) => ({
   key: pod.metadata.uid,
