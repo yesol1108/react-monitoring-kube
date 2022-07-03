@@ -1,9 +1,10 @@
+/* eslint-disable array-callback-return */
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/require-default-props */
 /* eslint-disable no-shadow */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
-import PropTypes from "prop-types";
+import PropTypes, { objectOf } from "prop-types";
 
 // @mui material components
 import Grid from "@mui/material/Grid";
@@ -27,7 +28,7 @@ import NodeTemplate from "./components/NodeTemplate";
 import NamespacesList from "./components/NamespacesList";
 import ServicesList from "./components/ServicesList";
 
-const apitoken = "Bearer sha256~Kzb8BV0OJ0fPZDa_IDDoodjEiR2J_alCfZNZEfAUsUE";
+const apitoken = "Bearer sha256~GS5LHfJZhpnDSqO6dG1h5sogy9x7YbTMTYEoMf54Oy0";
 
 const createPod = (pod) => ({
   key: pod.metadata.uid,
@@ -50,10 +51,11 @@ const createNamespace = (namespace, podsByNamespace) => ({
   podCount: podsByNamespace.length,
 });
 
-const createService = (service) => ({
+const createService = (service, serviceColor) => ({
   uid: service.metadata.uid,
-  name: service.metadata.name,
+  serviceName: service.metadata.name,
   namespace: service.metadata.namespace,
+  svcColor: serviceColor,
 });
 
 const onNewLine = (buffer, fn) => {
@@ -120,9 +122,11 @@ function PodMonitoring() {
   const [namespaceList, setAllNamespaces] = useState({});
   const [serviceList, setAllServices] = useState({});
   const [podcount, setPodCount] = useState({});
+  const [serviceColorList, setServiceColor] = useState({});
 
   const podsByNode = groupBy(podList, (it) => it.nodeName);
   const podsByNamespace = groupBy(podList, (it) => it.namespace);
+  const podsByServices = groupBy(podList, (it) => it.generateName);
 
   const initalNamespaces = (namespaces) => {
     const data = [];
@@ -143,15 +147,33 @@ function PodMonitoring() {
     setAllNamespaces(data);
   };
 
-  const initalServices = (services) => {
-    const data = [];
-    services.map((sv) => {
-      const servicesname = sv.metadata.name;
-
-      const createdService = createService(sv);
-      return data.push(createdService);
-    });
-    setAllServices(data);
+  const fetchServices = () => {
+    fetch("/api/v1/services", {
+      headers: {
+        Authorization: apitoken,
+        "Access-Control-Allow-origin": "*",
+        "Access-Control-Allow-Credentials": "true",
+      },
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        // console.log(response.items);
+        const serviceItems = response.items;
+        const initialServices = serviceItems.reduce((prev, cur) => {
+          if (!cur.metadata.name) {
+            return prev;
+          }
+          const serviceName = `${cur.metadata.name}`;
+          const serviceColor = Math.floor(Math.random() * 16777215).toString(16);
+          return {
+            ...prev,
+            [serviceName]: createService(cur, serviceColor),
+          };
+        }, {});
+        // console.log(initialServices);
+        setAllServices(initialServices);
+        setLoaded(true);
+      });
   };
 
   const fetchNamespaces = () => {
@@ -195,9 +217,10 @@ function PodMonitoring() {
             }
             try {
               const event = JSON.parse(chunk);
-              console.log("PROCESSING EVENT: ", event);
+              console.log("PROCESSING POD EVENT: ", event);
               const { object: podobject } = event;
               const podId = `${podobject.metadata.namespace}-${podobject.metadata.name}`;
+
               switch (event.type) {
                 case "MODIFIED":
                 case "ADDED": {
@@ -219,6 +242,7 @@ function PodMonitoring() {
                 default:
                   break;
               }
+              fetchServices();
               lastResourceVersion = event.object.metadata.resourceVersion;
             } catch (error) {
               console.log("Error while parsing", chunk, "\n", error);
@@ -232,6 +256,33 @@ function PodMonitoring() {
   };
 
   function fetchPods() {
+    let initialSvcs = "";
+
+    // get services
+    fetch("/api/v1/services", {
+      headers: {
+        Authorization: apitoken,
+        "Access-Control-Allow-origin": "*",
+        "Access-Control-Allow-Credentials": "true",
+      },
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        const serviceItems = response.items;
+        initialSvcs = serviceItems.reduce((prev, cur) => {
+          if (!cur.metadata.name) {
+            return prev;
+          }
+          const serviceName = `${cur.metadata.name}`;
+          const serviceColor = Math.floor(Math.random() * 16777215).toString(16);
+          return {
+            ...prev,
+            [serviceName]: createService(cur, serviceColor),
+          };
+        }, {});
+        setAllServices(initialSvcs);
+      });
+
     fetch("/api/v1/pods", {
       headers: {
         Authorization: apitoken,
@@ -242,35 +293,27 @@ function PodMonitoring() {
       .then((response) => response.json())
       .then((response) => {
         const poditems = response.items;
+
+        const serviceNames = Object.keys(initialSvcs);
+        console.log(serviceNames);
+
+        console.log(poditems);
+        // eslint-disable-next-line consistent-return
         const initialAllPods = poditems.reduce((prev, cur) => {
           if (!cur.spec.nodeName) {
             return prev;
           }
-          const podId = `${cur.metadata.namespace}-${cur.metadata.name}`;
+          const podName = cur.metadata.name;
+          const podId = `${cur.metadata.namespace}-${podName}`;
           return {
             ...prev,
             [podId]: createPod(cur),
           };
         }, {});
+        // console.log(response.items);
         setAllPods(initialAllPods);
         setLoaded(true);
         setResourceVersion(response.metadata.resourceVersion);
-      });
-  }
-
-  function fetchServices() {
-    fetch("/api/v1/services", {
-      headers: {
-        Authorization: apitoken,
-        "Access-Control-Allow-origin": "*",
-        "Access-Control-Allow-Credentials": "true",
-      },
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        console.log(response.items);
-        const services = response.items;
-        initalServices(services);
       });
   }
 
@@ -290,7 +333,6 @@ function PodMonitoring() {
       return;
     }
     streamUpdates(resourceVersion);
-    fetchNamespaces();
   }, [loaded, resourceVersion]);
   if (podList.length === 0) {
     return null;
@@ -299,21 +341,21 @@ function PodMonitoring() {
   return (
     <DashboardLayout>
       <DashboardNavbar />
-      <Tabs value={tabval} onChange={handleChange} aria-label="basic tabs example">
+      {/* <Tabs value={tabval} onChange={handleChange} aria-label="basic tabs example">
         <Tab label="노드" {...a11yProps(0)} />
         <Tab label="네임스페이스" {...a11yProps(1)} />
         <Tab label="서비스" {...a11yProps(2)} />
-      </Tabs>
-      <TabPanel value={tabval} index={0}>
-        <MDBox py={3}>
-          <Grid container spacing={1.5}>
-            {Object.keys(podsByNode).map((nodeName) => {
-              const pods = podsByNode[nodeName];
-              return <NodeTemplate key={nodeName} nodeName={nodeName} pods={pods} />;
-            })}
-          </Grid>
-        </MDBox>
-      </TabPanel>
+      </Tabs> */}
+      {/* <TabPanel value={tabval} index={0}> */}
+      <MDBox py={3}>
+        <Grid container spacing={1.5}>
+          {Object.keys(podsByNode).map((nodeName) => {
+            const pods = podsByNode[nodeName];
+            return <NodeTemplate key={nodeName} nodeName={nodeName} pods={pods} />;
+          })}
+        </Grid>
+      </MDBox>
+      {/* </TabPanel>
       <TabPanel value={tabval} index={1}>
         Namepsace
         <NamespacesList namespaceList={Object.values(namespaceList)} pods={podsByNamespace} />
@@ -321,7 +363,7 @@ function PodMonitoring() {
       <TabPanel value={tabval} index={2}>
         Service
         <ServicesList serviceList={Object.values(serviceList)} />
-      </TabPanel>
+      </TabPanel> */}
       {/* <Footer /> */}
     </DashboardLayout>
   );
