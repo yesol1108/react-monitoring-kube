@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 /* eslint-disable array-callback-return */
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/require-default-props */
@@ -28,15 +29,17 @@ import NodeTemplate from "./components/NodeTemplate";
 import NamespacesList from "./components/NamespacesList";
 import ServicesList from "./components/ServicesList";
 
-const apitoken = "Bearer sha256~GS5LHfJZhpnDSqO6dG1h5sogy9x7YbTMTYEoMf54Oy0";
+const apitoken = "Bearer sha256~bI3Xr3bEmwXGHKqVmDZTEhXJ-Yn15tUspXGOW-wH3qM";
 
-const createPod = (pod) => ({
+const createPod = (pod, podColor, podSvcName) => ({
   key: pod.metadata.uid,
   uid: pod.metadata.uid,
   name: pod.metadata.name,
   namespace: pod.metadata.namespace,
   nodeName: pod.spec.nodeName,
   status: pod.status.phase,
+  svcColor: podColor,
+  service: podSvcName,
 });
 
 const createNamespace = (namespace, podsByNamespace) => ({
@@ -85,6 +88,18 @@ function a11yProps(index) {
     id: `simple-tab-${index}`,
     "aria-controls": `simple-tabpanel-${index}`,
   };
+}
+
+function generateRandomColor() {
+  // eslint-disable-next-line no-var
+  var letters = "0123456789ABCDEF";
+  // eslint-disable-next-line no-var
+  var color = "#";
+  // eslint-disable-next-line vars-on-top
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
 }
 
 function TabPanel(props) {
@@ -157,20 +172,19 @@ function PodMonitoring() {
     })
       .then((response) => response.json())
       .then((response) => {
-        // console.log(response.items);
         const serviceItems = response.items;
         const initialServices = serviceItems.reduce((prev, cur) => {
           if (!cur.metadata.name) {
             return prev;
           }
           const serviceName = `${cur.metadata.name}`;
-          const serviceColor = Math.floor(Math.random() * 16777215).toString(16);
+          const serviceColor = generateRandomColor();
           return {
             ...prev,
             [serviceName]: createService(cur, serviceColor),
           };
         }, {});
-        // console.log(initialServices);
+
         setAllServices(initialServices);
         setLoaded(true);
       });
@@ -227,8 +241,29 @@ function PodMonitoring() {
                   if (!podobject.spec.nodeName) {
                     return;
                   }
-                  // console.log(podobject);
-                  setAllPods((prev) => ({ ...prev, [podId]: createPod(podobject) }));
+                  const podName = podobject.metadata.name;
+
+                  const serviceNames = Object.keys(serviceList);
+                  let includeName = "";
+                  serviceNames.forEach((i) => {
+                    if (podName.includes(i)) {
+                      includeName = i;
+                    }
+                    return includeName;
+                  });
+
+                  let podColor = "#c1e6ff";
+                  let podSvcName = "";
+                  if (includeName === "" || includeName === "null") {
+                    podColor = "";
+                  } else {
+                    podColor = serviceList[includeName].svcColor;
+                    podSvcName = includeName;
+                  }
+                  setAllPods((prev) => ({
+                    ...prev,
+                    [podId]: createPod(podobject, podColor, podSvcName),
+                  }));
                   break;
                 }
                 case "DELETED": {
@@ -274,13 +309,14 @@ function PodMonitoring() {
             return prev;
           }
           const serviceName = `${cur.metadata.name}`;
-          const serviceColor = Math.floor(Math.random() * 16777215).toString(16);
+          const serviceColor = generateRandomColor();
           return {
             ...prev,
             [serviceName]: createService(cur, serviceColor),
           };
         }, {});
         setAllServices(initialSvcs);
+        console.log(initialSvcs);
       });
 
     fetch("/api/v1/pods", {
@@ -295,9 +331,8 @@ function PodMonitoring() {
         const poditems = response.items;
 
         const serviceNames = Object.keys(initialSvcs);
-        console.log(serviceNames);
-
-        console.log(poditems);
+        // console.log(serviceNames);
+        // console.log(poditems);
         // eslint-disable-next-line consistent-return
         const initialAllPods = poditems.reduce((prev, cur) => {
           if (!cur.spec.nodeName) {
@@ -305,12 +340,31 @@ function PodMonitoring() {
           }
           const podName = cur.metadata.name;
           const podId = `${cur.metadata.namespace}-${podName}`;
+          // eslint-disable-next-line consistent-return
+          let includeName = "";
+          serviceNames.forEach((i) => {
+            if (podName.includes(i)) {
+              includeName = i;
+            }
+            return includeName;
+          });
+
+          let podColor = "#c1e6ff";
+          let podSvcName = "";
+
+          if (includeName === "" || includeName === "null") {
+            podColor = "#c1e6ff";
+          } else {
+            podColor = initialSvcs[includeName].svcColor;
+            podSvcName = includeName;
+          }
+
           return {
             ...prev,
-            [podId]: createPod(cur),
+            [podId]: createPod(cur, podColor, podSvcName),
           };
         }, {});
-        // console.log(response.items);
+        console.log(response.items);
         setAllPods(initialAllPods);
         setLoaded(true);
         setResourceVersion(response.metadata.resourceVersion);
