@@ -9,10 +9,7 @@ import PropTypes, { objectOf } from "prop-types";
 
 // @mui material components
 import Grid from "@mui/material/Grid";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -26,10 +23,8 @@ import Footer from "examples/Footer";
 import { setDarkMode } from "context";
 
 import NodeTemplate from "./components/NodeTemplate";
-import NamespacesList from "./components/NamespacesList";
-import ServicesList from "./components/ServicesList";
 
-const apitoken = "Bearer sha256~bI3Xr3bEmwXGHKqVmDZTEhXJ-Yn15tUspXGOW-wH3qM";
+const apitoken = "Bearer sha256~CCMIkBOJJDIVOrl39O7fa4-TeXUmUIYWBGFVAPKCHgI";
 
 const createPod = (pod, podColor, podSvcName) => ({
   key: pod.metadata.uid,
@@ -40,18 +35,6 @@ const createPod = (pod, podColor, podSvcName) => ({
   status: pod.status.phase,
   svcColor: podColor,
   service: podSvcName,
-});
-
-const createNamespace = (namespace, podsByNamespace) => ({
-  // { Header: "Display name", accessor: "displayname", width: "16%" },
-  // { Header: "Requester", accessor: "requester", width: "16%" },
-  // { Header: "Memory", accessor: "memory", width: "11%" },
-  // { Header: "Cpu", accessor: "cpu", width: "11%" },
-  uid: namespace.metadata.uid,
-  name: namespace.metadata.name,
-  status: namespace.status.phase,
-  createdAt: namespace.metadata.creationTimestamp,
-  podCount: podsByNamespace.length,
 });
 
 const createService = (service, serviceColor) => ({
@@ -83,84 +66,27 @@ function groupBy(arr, groupByKeyFn) {
   }, {});
 }
 
-function a11yProps(index) {
-  return {
-    id: `simple-tab-${index}`,
-    "aria-controls": `simple-tabpanel-${index}`,
-  };
-}
-
 function generateRandomColor() {
-  // eslint-disable-next-line no-var
   var letters = "0123456789ABCDEF";
-  // eslint-disable-next-line no-var
   var color = "#";
-  // eslint-disable-next-line vars-on-top
   for (let i = 0; i < 6; i++) {
     color += letters[Math.floor(Math.random() * 16)];
   }
   return color;
 }
 
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </div>
-  );
-}
-
-TabPanel.propTypes = {
-  children: PropTypes.node,
-  index: PropTypes.number.isRequired,
-  value: PropTypes.number.isRequired,
-};
-
 function PodMonitoring() {
   const [loaded, setLoaded] = useState(false);
   const [resourceVersion, setResourceVersion] = useState(null);
   const [allPods, setAllPods] = useState({});
-  const podList = Array.from(Object.values(allPods));
-  const [tabval, setTabVal] = useState(0);
-  const [namespaceList, setAllNamespaces] = useState({});
   const [serviceList, setAllServices] = useState({});
-  const [podcount, setPodCount] = useState({});
   const [serviceColorList, setServiceColor] = useState({});
 
+  const podList = Array.from(Object.values(allPods));
+  const serviceInitialList = Array.from(Object.values(serviceList));
+
   const podsByNode = groupBy(podList, (it) => it.nodeName);
-  const podsByNamespace = groupBy(podList, (it) => it.namespace);
   const podsByServices = groupBy(podList, (it) => it.generateName);
-
-  const initalNamespaces = (namespaces) => {
-    const data = [];
-    // console.log(podsByNamespace);
-    namespaces.map((ns) => {
-      const namespacename = ns.metadata.name;
-
-      if (
-        podsByNamespace[namespacename] === undefined ||
-        podsByNamespace[namespacename] === "undefined"
-      ) {
-        return null;
-      }
-      const createdNamespace = createNamespace(ns, podsByNamespace[namespacename]);
-
-      return data.push(createdNamespace);
-    });
-    setAllNamespaces(data);
-  };
 
   const fetchServices = () => {
     fetch("/api/v1/services", {
@@ -184,29 +110,11 @@ function PodMonitoring() {
             [serviceName]: createService(cur, serviceColor),
           };
         }, {});
-
         setAllServices(initialServices);
-        setLoaded(true);
-      });
-  };
-
-  const fetchNamespaces = () => {
-    fetch("/api/v1/namespaces", {
-      headers: {
-        Authorization: apitoken,
-        "Access-Control-Allow-origin": "*",
-        "Access-Control-Allow-Credentials": "true",
-      },
-    })
-      .then((response) => response.json())
-      .then((response) => {
-        const namespaceitems = response.items;
-        initalNamespaces(namespaceitems);
       });
   };
 
   const streamUpdates = async (initialLastResourceVersion) => {
-    // eslint-disable-next-line prefer-const
     let lastResourceVersion = initialLastResourceVersion;
     if (lastResourceVersion != null) {
       fetch(`/api/v1/pods?watch=1&resourceVersion=${lastResourceVersion}`, {
@@ -283,7 +191,6 @@ function PodMonitoring() {
               console.log("Error while parsing", chunk, "\n", error);
             }
           });
-          // eslint-disable-next-line consistent-return
           return stream.read().then(processText);
         });
       });
@@ -291,6 +198,7 @@ function PodMonitoring() {
   };
 
   function fetchPods() {
+
     let initialSvcs = "";
 
     // get services
@@ -319,6 +227,31 @@ function PodMonitoring() {
         console.log(initialSvcs);
       });
 
+    fetch("/api/v1/services", {
+      headers: {
+        Authorization: apitoken,
+        "Access-Control-Allow-origin": "*",
+        "Access-Control-Allow-Credentials": "true",
+      },
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        const serviceItems = response.items;
+        const initialServices = serviceItems.reduce((prev, cur) => {
+          if (!cur.metadata.name) {
+            return prev;
+          }
+          const serviceName = `${cur.metadata.name}`;
+          const serviceColor = generateRandomColor();
+          return {
+            ...prev,
+            [serviceName]: createService(cur, serviceColor),
+          };
+        }, {});
+        console.log(initialServices);
+        setAllServices(initialServices);
+      });
+
     fetch("/api/v1/pods", {
       headers: {
         Authorization: apitoken,
@@ -330,17 +263,15 @@ function PodMonitoring() {
       .then((response) => {
         const poditems = response.items;
 
-        const serviceNames = Object.keys(initialSvcs);
-        // console.log(serviceNames);
+        const serviceNames = Object.keys(serviceList);
+
         // console.log(poditems);
-        // eslint-disable-next-line consistent-return
         const initialAllPods = poditems.reduce((prev, cur) => {
           if (!cur.spec.nodeName) {
             return prev;
           }
           const podName = cur.metadata.name;
           const podId = `${cur.metadata.namespace}-${podName}`;
-          // eslint-disable-next-line consistent-return
           let includeName = "";
           serviceNames.forEach((i) => {
             if (podName.includes(i)) {
@@ -364,21 +295,15 @@ function PodMonitoring() {
             [podId]: createPod(cur, podColor, podSvcName),
           };
         }, {});
-        console.log(response.items);
+        
         setAllPods(initialAllPods);
         setLoaded(true);
         setResourceVersion(response.metadata.resourceVersion);
       });
   }
 
-  const handleChange = (event, newValue) => {
-    console.log(newValue);
-    if (newValue === 1) fetchNamespaces();
-    else if (newValue === 2) fetchServices();
-    setTabVal(newValue);
-  };
-
   useEffect(() => {
+    fetchServices();
     fetchPods();
   }, []);
 
@@ -395,12 +320,6 @@ function PodMonitoring() {
   return (
     <DashboardLayout>
       <DashboardNavbar />
-      {/* <Tabs value={tabval} onChange={handleChange} aria-label="basic tabs example">
-        <Tab label="노드" {...a11yProps(0)} />
-        <Tab label="네임스페이스" {...a11yProps(1)} />
-        <Tab label="서비스" {...a11yProps(2)} />
-      </Tabs> */}
-      {/* <TabPanel value={tabval} index={0}> */}
       <MDBox py={3}>
         <Grid container spacing={1.5}>
           {Object.keys(podsByNode).map((nodeName) => {
@@ -409,16 +328,6 @@ function PodMonitoring() {
           })}
         </Grid>
       </MDBox>
-      {/* </TabPanel>
-      <TabPanel value={tabval} index={1}>
-        Namepsace
-        <NamespacesList namespaceList={Object.values(namespaceList)} pods={podsByNamespace} />
-      </TabPanel>
-      <TabPanel value={tabval} index={2}>
-        Service
-        <ServicesList serviceList={Object.values(serviceList)} />
-      </TabPanel> */}
-      {/* <Footer /> */}
     </DashboardLayout>
   );
 }

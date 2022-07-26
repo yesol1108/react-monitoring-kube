@@ -33,7 +33,7 @@ function NodeTemplate({ pods, nodeName, color }) {
             </MDTypography>
           </MDBox>
           <Divider />
-          <MDBox p={0.5} mt={-1.5} mb={1} ml={2}>
+          <MDBox key={nodeName} p={0.5} mt={-1.5} mb={1} ml={2}>
             <Grid container alignItems="center">
               <Node key={nodeName} pods={pods} />
             </Grid>

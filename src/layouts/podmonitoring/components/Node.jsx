@@ -2,14 +2,11 @@
 /* eslint-disable no-unused-vars */
 import React from "react";
 import PropTypes from "prop-types";
-import hexToRgb from "assets/theme/functions/hexToRgb";
 import MDBox from "components/MDBox";
 import Box from "@mui/material/Box";
 
 // @mui material components
-import Grid from "@mui/material/Grid";
 import { Tooltip } from "@mui/material";
-import chroma from "chroma-js";
 
 function Node({ pods }) {
   // console.log(pods);
@@ -18,11 +15,10 @@ function Node({ pods }) {
   }
   return (
     <>
-      {/* eslint-disable-next-line no-unused-vars */}
       {pods.map((pod) => (
-        <Grid item xs={12} sm={3} lg={2}>
-          <Tooltip title={`${pod.name}@@@${pod.service}`}>
+          <Tooltip key={pod.uid} title={`${pod.name}@@@${pod.service}`} >
             <Box
+              key={pod.uid}
               sx={{
                 width: 35,
                 height: 35,
@@ -35,7 +31,6 @@ function Node({ pods }) {
               }}
             />
           </Tooltip>
-        </Grid>
       ))}
     </>
   );
