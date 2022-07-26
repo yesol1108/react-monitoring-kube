@@ -1,4 +1,3 @@
-/* eslint-disable no-plusplus */
 /* eslint-disable array-callback-return */
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/require-default-props */
@@ -24,17 +23,19 @@ import { setDarkMode } from "context";
 
 import NodeTemplate from "./components/NodeTemplate";
 
+<<<<<<< HEAD
 const apitoken = "Bearer sha256~CCMIkBOJJDIVOrl39O7fa4-TeXUmUIYWBGFVAPKCHgI";
+=======
+const apitoken = "Bearer sha256~GS5LHfJZhpnDSqO6dG1h5sogy9x7YbTMTYEoMf54Oy0";
+>>>>>>> parent of 002afa6 (box 마다 색깔 다르게 출력은 되는데 service를 pod name으로 자르는게 좀....)
 
-const createPod = (pod, podColor, podSvcName) => ({
+const createPod = (pod) => ({
   key: pod.metadata.uid,
   uid: pod.metadata.uid,
   name: pod.metadata.name,
   namespace: pod.metadata.namespace,
   nodeName: pod.spec.nodeName,
   status: pod.status.phase,
-  svcColor: podColor,
-  service: podSvcName,
 });
 
 const createService = (service, serviceColor) => ({
@@ -66,6 +67,7 @@ function groupBy(arr, groupByKeyFn) {
   }, {});
 }
 
+<<<<<<< HEAD
 function generateRandomColor() {
   var letters = "0123456789ABCDEF";
   var color = "#";
@@ -75,6 +77,41 @@ function generateRandomColor() {
   return color;
 }
 
+=======
+function a11yProps(index) {
+  return {
+    id: `simple-tab-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
+  };
+}
+
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ p: 3 }}>
+          <Typography>{children}</Typography>
+        </Box>
+      )}
+    </div>
+  );
+}
+
+TabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.number.isRequired,
+  value: PropTypes.number.isRequired,
+};
+
+>>>>>>> parent of 002afa6 (box 마다 색깔 다르게 출력은 되는데 service를 pod name으로 자르는게 좀....)
 function PodMonitoring() {
   const [loaded, setLoaded] = useState(false);
   const [resourceVersion, setResourceVersion] = useState(null);
@@ -98,18 +135,23 @@ function PodMonitoring() {
     })
       .then((response) => response.json())
       .then((response) => {
+        // console.log(response.items);
         const serviceItems = response.items;
         const initialServices = serviceItems.reduce((prev, cur) => {
           if (!cur.metadata.name) {
             return prev;
           }
           const serviceName = `${cur.metadata.name}`;
-          const serviceColor = generateRandomColor();
+          const serviceColor = Math.floor(Math.random() * 16777215).toString(16);
           return {
             ...prev,
             [serviceName]: createService(cur, serviceColor),
           };
         }, {});
+<<<<<<< HEAD
+=======
+        // console.log(initialServices);
+>>>>>>> parent of 002afa6 (box 마다 색깔 다르게 출력은 되는데 service를 pod name으로 자르는게 좀....)
         setAllServices(initialServices);
       });
   };
@@ -149,29 +191,8 @@ function PodMonitoring() {
                   if (!podobject.spec.nodeName) {
                     return;
                   }
-                  const podName = podobject.metadata.name;
-
-                  const serviceNames = Object.keys(serviceList);
-                  let includeName = "";
-                  serviceNames.forEach((i) => {
-                    if (podName.includes(i)) {
-                      includeName = i;
-                    }
-                    return includeName;
-                  });
-
-                  let podColor = "#c1e6ff";
-                  let podSvcName = "";
-                  if (includeName === "" || includeName === "null") {
-                    podColor = "";
-                  } else {
-                    podColor = serviceList[includeName].svcColor;
-                    podSvcName = includeName;
-                  }
-                  setAllPods((prev) => ({
-                    ...prev,
-                    [podId]: createPod(podobject, podColor, podSvcName),
-                  }));
+                  // console.log(podobject);
+                  setAllPods((prev) => ({ ...prev, [podId]: createPod(podobject) }));
                   break;
                 }
                 case "DELETED": {
@@ -217,14 +238,13 @@ function PodMonitoring() {
             return prev;
           }
           const serviceName = `${cur.metadata.name}`;
-          const serviceColor = generateRandomColor();
+          const serviceColor = Math.floor(Math.random() * 16777215).toString(16);
           return {
             ...prev,
             [serviceName]: createService(cur, serviceColor),
           };
         }, {});
         setAllServices(initialSvcs);
-        console.log(initialSvcs);
       });
 
     fetch("/api/v1/services", {
@@ -263,15 +283,24 @@ function PodMonitoring() {
       .then((response) => {
         const poditems = response.items;
 
+<<<<<<< HEAD
         const serviceNames = Object.keys(serviceList);
 
         // console.log(poditems);
+=======
+        const serviceNames = Object.keys(initialSvcs);
+        console.log(serviceNames);
+
+        console.log(poditems);
+        // eslint-disable-next-line consistent-return
+>>>>>>> parent of 002afa6 (box 마다 색깔 다르게 출력은 되는데 service를 pod name으로 자르는게 좀....)
         const initialAllPods = poditems.reduce((prev, cur) => {
           if (!cur.spec.nodeName) {
             return prev;
           }
           const podName = cur.metadata.name;
           const podId = `${cur.metadata.namespace}-${podName}`;
+<<<<<<< HEAD
           let includeName = "";
           serviceNames.forEach((i) => {
             if (podName.includes(i)) {
@@ -290,12 +319,18 @@ function PodMonitoring() {
             podSvcName = includeName;
           }
 
+=======
+>>>>>>> parent of 002afa6 (box 마다 색깔 다르게 출력은 되는데 service를 pod name으로 자르는게 좀....)
           return {
             ...prev,
-            [podId]: createPod(cur, podColor, podSvcName),
+            [podId]: createPod(cur),
           };
         }, {});
+<<<<<<< HEAD
         
+=======
+        // console.log(response.items);
+>>>>>>> parent of 002afa6 (box 마다 색깔 다르게 출력은 되는데 service를 pod name으로 자르는게 좀....)
         setAllPods(initialAllPods);
         setLoaded(true);
         setResourceVersion(response.metadata.resourceVersion);
