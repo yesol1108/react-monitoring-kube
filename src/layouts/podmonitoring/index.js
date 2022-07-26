@@ -74,7 +74,7 @@ function groupBy(arr, groupByKeyFn) {
 function generateRandomColor() {
   const letters = "0123456789ABCDEF";
   let color = "#";
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 6; i += 1) {
     color += letters[Math.floor(Math.random() * 16)];
   }
   return color;
@@ -111,7 +111,7 @@ function PodMonitoring() {
           if (!cur.metadata.name) {
             return prev;
           }
-          const serviceName = `${cur.metadata.namespace}-${cur.metadata.name}`;
+          const serviceName = `${cur.metadata.name}`;
           const serviceColor = generateRandomColor();
           return {
             ...prev,
@@ -152,6 +152,7 @@ function PodMonitoring() {
               console.log("PROCESSING POD EVENT: ", event);
               const { object: podobject } = event;
               const podId = `${podobject.metadata.namespace}-${podobject.metadata.name}`;
+              fetchServices();
 
               switch (event.type) {
                 case "MODIFIED":
@@ -173,7 +174,7 @@ function PodMonitoring() {
                   let podColor = "#c1e6ff";
                   let podSvcName = "";
                   if (includeName === "" || includeName === "null") {
-                    podColor = "";
+                    podColor = "#c1e6ff";
                   } else {
                     podColor = serviceList[includeName].svcColor;
                     podSvcName = includeName;
@@ -227,7 +228,7 @@ function PodMonitoring() {
           if (!cur.metadata.name) {
             return prev;
           }
-          const serviceName = `${cur.metadata.namespace}.${cur.metadata.name}`;
+          const serviceName = `${cur.metadata.name}`;
           const serviceColor = generateRandomColor();
           return {
             ...prev,
@@ -250,7 +251,7 @@ function PodMonitoring() {
         const poditems = response.items;
 
         const serviceNames = Object.keys(initialSvcs);
-        // console.log(initialSvcs);
+        // console.log(serviceNames);
         // console.log(poditems);
         const initialAllPods = poditems.reduce((prev, cur) => {
           if (!cur.spec.nodeName) {
@@ -258,26 +259,27 @@ function PodMonitoring() {
           }
           const podName = cur.metadata.name;
           const podNamespace = cur.metadata.namespace;
-          const podAppSelector = cur.metadata.labels.app;
 
-          const serviceName = `${podNamespace}.${podAppSelector}`;
           const podId = `${podNamespace}-${podName}`;
+
+          let includeName = "";
+          serviceNames.forEach((i) => {
+            if (podName.includes(i)) {
+              includeName = i;
+            }
+            return includeName;
+          });
 
           let podColor = "#c1e6ff";
           let podSvcName = "";
-          // console.log(podAppSelector);
 
-          if (
-            podAppSelector === "" ||
-            podAppSelector === "null" ||
-            podAppSelector === "undefined"
-          ) {
+          if (includeName === "" || includeName === "null") {
             podColor = "#c1e6ff";
           } else {
-            // console.log(initialSvcs[serviceName]);
-            // podColor = initialSvcs[serviceName].svcColor;
-            podSvcName = podAppSelector;
+            podColor = initialSvcs[includeName].svcColor;
+            podSvcName = includeName;
           }
+
           return {
             ...prev,
             [podId]: createPod(cur, podColor, podSvcName),
