@@ -16,7 +16,7 @@ function Node({ pods }) {
   return (
     <>
       {pods.map((pod) => (
-        <Tooltip key={pod.uid} title={`${pod.name}@@@${pod.service}`}>
+        <Tooltip key={pod.uid} title={`${pod.name}`}>
           <Box
             key={pod.uid}
             sx={{
